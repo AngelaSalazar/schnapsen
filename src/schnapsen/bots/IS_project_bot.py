@@ -9,6 +9,13 @@ class IS_project_bot(Bot):
     we are going to use different functions through the whole class
     """
 
+
+    #we are stupud again
+
+
+
+
+
     def get_move(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
         """
         This is the basic strategy for every move that the bot is going to use.
@@ -18,6 +25,7 @@ class IS_project_bot(Bot):
             if self.condition1(perspective, leader_move):
                 self.action1(perspective, leader_move)
             if self.condition2(perspective, leader_move):
+                print('321321312')
                 return self.action2(perspective, leader_move)
             else:
                 return self.action3(perspective, leader_move)
