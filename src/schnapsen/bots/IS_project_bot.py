@@ -1,5 +1,5 @@
 from schnapsen.game import Bot, Move, PlayerPerspective
-from schnapsen.game import SchnapsenTrickScorer, GamePhase, TrumpExchange
+from schnapsen.game import SchnapsenTrickScorer, GamePhase, TrumpExchange, Talon
 from schnapsen.deck import Card, Suit, Rank
 
 class IS_project_bot(Bot):
@@ -8,13 +8,6 @@ class IS_project_bot(Bot):
     In order to make the bot easier to understand and less complicated to build up,
     we are going to use different functions through the whole class
     """
-
-
-    #we are stupud again
-
-
-
-
 
     def get_move(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
         """
@@ -73,13 +66,35 @@ class IS_project_bot(Bot):
         """
         Checks if there is a marriage in our hand
         """
-        raise NotImplementedError("Not yet implemented")
+
+        current_moves = perspective.valid_moves()
+
+        for current_move in current_moves:
+            if current_move.is_marriage():
+                return True
+
+        return False
+
+        #raise NotImplementedError("Not yet implemented")
 
     def action2(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
         """
         Plays the marriage in our hand. (If there are 2 or even 3 marriages, always prioritize the trump marriage, if there we have one)
         """
-        raise NotImplementedError("Not yet implemented")
+
+        current_moves = perspective.valid_moves()
+
+        for current_move in current_moves:
+            if current_move.is_marriage() and current_move[0].card.suit == Talon.trump_suit():
+                return current_move
+            
+        for current_move in current_moves:
+            if current_move.is_marriage() and current_move[0].card.suit == Talon.trump_suit():
+                return current_move
+
+        return False
+
+        #raise NotImplementedError("Not yet implemented")
     
     def action3(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
         """
@@ -146,13 +161,35 @@ class IS_project_bot(Bot):
         """
         Checks if there is a trump card in our deck
         """
-        raise NotImplementedError("Not yet implemented")
+        current_cards = perspective.get_hand()
+
+        for current_card in current_cards:
+            if current_card.suit == Talon.trump_suit():
+                return True
+
+        return False
+        #raise NotImplementedError("Not yet implemented")
 
     def action5(self, perspective: PlayerPerspective, leader_move: Move | None) -> Move:
         """
         Plays the lowest trump card from our hand
         """
-        raise NotImplementedError("Not yet implemented")
+        current_moves = perspective.get_moves()
+
+        trump_cards = []
+
+        for current_move in current_moves:
+            if current_move.card.suit == Talon.trump_suit():
+                trump_cards.append(current_move)
+
+        sorted_trump_cards = sorted(trump_cards, key=lambda move, bot=self: (-SchnapsenTrickScorer.rank_to_points(bot, rank=move.card.rank), self.suit_priority.index(move.card.suit)))
+
+        if len(sorted_trump_cards) > 0:
+            return sorted_trump_cards[0]
+        else:
+            return None
+
+        #raise NotImplementedError("Not yet implemented")
     
     def _card_points(self, card: Card) -> int:
             """
