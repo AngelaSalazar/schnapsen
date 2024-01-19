@@ -18,7 +18,6 @@ class IS_project_bot(Bot):
             if self.condition1(perspective, leader_move):
                 self.action1(perspective, leader_move)
             if self.condition2(perspective, leader_move):
-                print('321321312')
                 return self.action2(perspective, leader_move)
             else:
                 return self.action3(perspective, leader_move)
@@ -85,14 +84,13 @@ class IS_project_bot(Bot):
         current_moves = perspective.valid_moves()
 
         for current_move in current_moves:
-            if current_move.is_marriage() and current_move[0].card.suit == Talon.trump_suit():
+            if current_move.is_marriage() and current_move.as_regular_move().card.suit == Talon.trump_suit():
                 return current_move
             
         for current_move in current_moves:
-            if current_move.is_marriage() and current_move[0].card.suit == Talon.trump_suit():
+            if current_move.is_marriage() and current_move.as_regular_move().card.suit == Talon.trump_suit():
                 return current_move
 
-        return False
 
         #raise NotImplementedError("Not yet implemented")
     
@@ -174,20 +172,13 @@ class IS_project_bot(Bot):
         """
         Plays the lowest trump card from our hand
         """
-        current_moves = perspective.get_moves()
+        current_moves = perspective.valid_moves()
 
-        trump_cards = []
+        trump_cards_moves = [move for move in current_moves if move.as_regular_move().card.suit == Talon.trump_suit()]
 
-        for current_move in current_moves:
-            if current_move.card.suit == Talon.trump_suit():
-                trump_cards.append(current_move)
+        trump_cards_moves.sort(key=lambda move: self._card_points(move.as_regular_move().card))
 
-        sorted_trump_cards = sorted(trump_cards, key=lambda move, bot=self: (-SchnapsenTrickScorer.rank_to_points(bot, rank=move.card.rank), self.suit_priority.index(move.card.suit)))
-
-        if len(sorted_trump_cards) > 0:
-            return sorted_trump_cards[0]
-        else:
-            return None
+        return trump_cards_moves[0]
 
         #raise NotImplementedError("Not yet implemented")
     
