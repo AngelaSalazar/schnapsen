@@ -99,10 +99,10 @@ class IS_project_bot(Bot):
         """
         Plays the card with the lowest points, which is not a trump card!
         """
-        valid_moves = [move for move in perspective.valid_moves() if move.as_regular_move().card.suit != perspective.get_trump_suit()]
+        valid_moves = [move for move in perspective.valid_moves() if move.as_regular_move().card.suit != perspective.get_trump_suit() and move.is_regular_move()]
         valid_moves.sort(key=lambda move: (self._card_points(move.as_regular_move().card)))
         if len(valid_moves) == 0:
-            moves: list[Move] = perspective.valid_moves()
+            moves = [move for move in perspective.valid_moves() if move.is_regular_move()]
             return moves[0]
         return valid_moves[0]
         raise NotImplementedError("Not yet implemented")
@@ -146,14 +146,12 @@ class IS_project_bot(Bot):
 
     def condition4(self, perspective: PlayerPerspective, leader_move: Move | None) -> bool:
         """
-        Checks if the played card from the opponent was king, queen or jack 
+        Checks if the played card from the opponent was queen or jack 
         """
         if leader_move is None:
             return False
         played_card = leader_move.as_regular_move().card
         card_rank = played_card.rank
-        if card_rank == Rank.KING:
-            return True
         if card_rank == Rank.QUEEN:
             return True
         if card_rank == Rank.JACK:
