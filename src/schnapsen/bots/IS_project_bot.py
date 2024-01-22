@@ -1,6 +1,7 @@
 from schnapsen.game import Bot, Move, PlayerPerspective
 from schnapsen.game import SchnapsenTrickScorer, GamePhase, TrumpExchange, Talon
 from schnapsen.deck import Card, Suit, Rank
+import random
 
 class IS_project_bot(Bot):
     """
@@ -100,6 +101,9 @@ class IS_project_bot(Bot):
         """
         valid_moves = [move for move in perspective.valid_moves() if move.as_regular_move().card.suit != perspective.get_trump_suit()]
         valid_moves.sort(key=lambda move: (self._card_points(move.as_regular_move().card)))
+        if len(valid_moves) == 0:
+            moves: list[Move] = perspective.valid_moves()
+            return moves[0]
         return valid_moves[0]
         raise NotImplementedError("Not yet implemented")
 
@@ -144,6 +148,8 @@ class IS_project_bot(Bot):
         """
         Checks if the played card from the opponent was king, queen or jack 
         """
+        if leader_move is None:
+            return False
         played_card = leader_move.as_regular_move().card
         card_rank = played_card.rank
         if card_rank == Rank.KING:
@@ -162,7 +168,7 @@ class IS_project_bot(Bot):
         current_cards = perspective.get_hand()
 
         for current_card in current_cards:
-            if current_card.suit == Talon.trump_suit():
+            if current_card.suit == perspective.get_trump_suit():
                 return True
 
         return False
@@ -172,14 +178,28 @@ class IS_project_bot(Bot):
         """
         Plays the lowest trump card from our hand
         """
-        current_moves = perspective.valid_moves()
+        '''current_moves = perspective.valid_moves()
 
-        trump_cards_moves = [move for move in current_moves if move.as_regular_move().card.suit == Talon.trump_suit()]
+        trump_cards_moves = [move for move in current_moves if move.as_regular_move().card.suit == perspective.get_trump_suit()]
 
         trump_cards_moves.sort(key=lambda move: self._card_points(move.as_regular_move().card))
 
-        return trump_cards_moves[0]
+        return trump_cards_moves[0]'''
+        current_moves = perspective.valid_moves()
 
+        # Filter out non-regular moves
+        current_moves = [move for move in current_moves if move.is_regular_move()]
+
+        # Filter out trump cards
+        trump_cards_moves = [move for move in current_moves if move.as_regular_move().card.suit == perspective.get_trump_suit()]
+
+        if trump_cards_moves:
+            # Play the lowest trump card
+            trump_cards_moves.sort(key=lambda move: move.as_regular_move().card.rank.value)
+            return trump_cards_moves[0]
+        else:
+            # If there are no trump cards, return the first move
+            return current_moves[0]
         #raise NotImplementedError("Not yet implemented")
     
     def _card_points(self, card: Card) -> int:
