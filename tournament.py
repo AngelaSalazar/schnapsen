@@ -5,7 +5,7 @@ from schnapsen.bots import RandBot, RdeepBot, IS_project_bot
 
 engine = SchnapsenGamePlayEngine()
 
-myrepeats = 10
+myrepeats = 100
 
 bot1 = IS_project_bot(name="IS_project_bot")
 #bot1 = RandBot(random.Random(42), name="RandBot")
