@@ -102,8 +102,10 @@ class IS_project_bot(Bot):
         valid_moves = [move for move in perspective.valid_moves() if move.as_regular_move().card.suit != perspective.get_trump_suit() and move.is_regular_move()]
         valid_moves.sort(key=lambda move: (self._card_points(move.as_regular_move().card)))
         if len(valid_moves) == 0:
-            moves = [move for move in perspective.valid_moves() if move.is_regular_move()]
-            return moves[0]
+            moves: list[Move] = perspective.valid_moves()
+            for move in moves:
+                if move.is_regular_move():
+                    return move
         return valid_moves[0]
         raise NotImplementedError("Not yet implemented")
 
