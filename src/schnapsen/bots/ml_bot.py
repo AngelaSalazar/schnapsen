@@ -1,4 +1,4 @@
-from schnapsen.game import Bot, PlayerPerspective, SchnapsenDeckGenerator, Move, Trick, GamePhase
+from schnapsen.game import Bot, PlayerPerspective, SchnapsenDeckGenerator, Move, Trick, GamePhase, GamePlayEngine, SchnapsenGamePlayEngine
 from typing import Optional, cast, Literal
 from schnapsen.deck import Suit, Rank
 from sklearn.neural_network import MLPClassifier
@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 import joblib
 import time
 import pathlib
-
+import random
 
 class MLPlayingBot(Bot):
     """
@@ -427,3 +427,103 @@ def get_state_feature_vector(perspective: PlayerPerspective) -> list[int]:
     state_feature_list += deck_knowledge_in_consecutive_one_hot_encodings
 
     return state_feature_list
+
+def create_replay_memory_dataset(bot1: Bot, bot2: Bot) -> None:
+    """Create offline dataset for training a ML bot.
+
+    Args:
+        bot1, bot2: the bot of your choice.
+
+    """
+    # define replay memory database creation parameters
+    num_of_games: int = 10000
+    replay_memory_dir: str = "ML_replay_memories"
+    replay_memory_filename: str = "random_random_10k_games.txt"
+    replay_memory_location = pathlib.Path(replay_memory_dir) / replay_memory_filename
+
+    delete_existing_older_dataset = False
+
+    # check if needed to delete any older versions of the dataset
+    if delete_existing_older_dataset and replay_memory_location.exists():
+        print(
+            f"An existing dataset was found at location '{replay_memory_location}', which will be deleted as selected."
+        )
+        replay_memory_location.unlink()
+
+    # in any case make sure the directory exists
+    replay_memory_location.parent.mkdir(parents=True, exist_ok=True)
+
+    # create new replay memory dataset, according to the behaviour of the provided bots and the provided random seed
+    engine = SchnapsenGamePlayEngine()
+    replay_memory_recording_bot_1 = MLDataBot(
+        bot1, replay_memory_location=replay_memory_location
+    )
+    replay_memory_recording_bot_2 = MLDataBot(
+        bot2, replay_memory_location=replay_memory_location
+    )
+    for i in range(1, num_of_games + 1):
+        if i % 500 == 0:
+            print(f"Progress: {i}/{num_of_games}")
+        engine.play_game(
+            replay_memory_recording_bot_1,
+            replay_memory_recording_bot_2,
+            random.Random(i),
+        )
+    print(
+        f"Replay memory dataset recorder for {num_of_games} games.\nDataset is stored at: {replay_memory_location}"
+    )
+
+def train_model(model_type: str) -> None:
+    """Train model for ML bot.
+    
+    Args:
+        model_type: either 'NN' for a neural network, or 'LR' for a logistic regression.
+
+    """
+    # directory where the replay memory is saved
+    replay_memory_filename: str = "random_random_10k_games.txt"
+    # filename of replay memory within that directory
+    replay_memories_directory: str = "ML_replay_memories"
+    # Whether to train a complicated Neural Network model or a simple one.
+    # Tips: a neural network usually requires bigger datasets to be trained on, and to play with the parameters of the model.
+    # Feel free to play with the hyperparameters of the model in file 'ml_bot.py', function 'train_ML_model',
+    # under the code of body of the if statement 'if use_neural_network:'
+    replay_memory_location = (
+        pathlib.Path(replay_memories_directory) / replay_memory_filename
+    )
+    model_name: str = "simple_model"
+    model_dir: str = "ML_models"
+    model_location = pathlib.Path(model_dir) / model_name
+    overwrite: bool = True
+
+    if overwrite and model_location.exists():
+        print(
+            f"Model at {model_location} exists already and will be overwritten as selected."
+        )
+        model_location.unlink()
+
+    train_ML_model(
+        replay_memory_location=replay_memory_location,
+        model_location=model_location,
+        model_class=model_type,
+    )
+
+def play_games_and_return_stats(
+    engine: GamePlayEngine, bot1: Bot, bot2: Bot, number_of_games: int
+) -> int:
+    """
+    Play number_of_games games between bot1 and bot2, using the SchnapsenGamePlayEngine, and return how often bot1 won.
+    Prints progress.
+    """
+    bot1_wins: int = 0
+    lead, follower = bot1, bot2
+    for i in range(1, number_of_games + 1):
+        if i % 2 == 0:
+            # swap bots so both start the same number of times
+            lead, follower = follower, lead
+        winner, _, _ = engine.play_game(lead, follower, random.Random(i))
+        if winner == bot1:
+            bot1_wins += 1
+        if i % 500 == 0:
+            print(f"Progress: {i}/{number_of_games}")
+    return bot1_wins
