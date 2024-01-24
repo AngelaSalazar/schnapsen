@@ -99,14 +99,25 @@ class IS_project_bot(Bot):
         """
         Plays the card with the lowest points, which is not a trump card!
         """
-        valid_moves = [move for move in perspective.valid_moves() if move.as_regular_move().card.suit != perspective.get_trump_suit() and move.is_regular_move()]
-        valid_moves.sort(key=lambda move: (self._card_points(move.as_regular_move().card)))
-        if len(valid_moves) == 0:
-            moves: list[Move] = perspective.valid_moves()
-            for move in moves:
-                if move.is_regular_move():
-                    return move
-        return valid_moves[0]
+        current_moves = perspective.valid_moves()
+
+        # Filter out non-regular moves
+        regular_moves = [move for move in current_moves if move.is_regular_move()]
+
+        if not regular_moves:
+            # If there are no regular moves, return the first move
+            return current_moves[0]
+
+        # Filter out trump cards
+        non_trump_moves = [move for move in regular_moves if move.as_regular_move().card.suit != perspective.get_trump_suit()]
+
+        if non_trump_moves:
+            # Play the card with the lowest points, which is not a trump card
+            non_trump_moves.sort(key=lambda move: move.as_regular_move().card.rank.value)
+            return non_trump_moves[0]
+        else:
+            # If there are no non-trump moves, return the first move
+            return regular_moves[0]
         raise NotImplementedError("Not yet implemented")
 
     def condition3(self, perspective: PlayerPerspective, leader_move: Move | None) -> bool:
