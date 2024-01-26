@@ -9,8 +9,8 @@ from schnapsen.bots.ml_bot import create_replay_memory_dataset, train_model, MLP
 bot1_sample = RandBot(rand=random.Random(), name="randbot")
 bot2 = RdeepBot = RdeepBot(num_samples= 2, depth = 2, rand=random.Random(), name="RdeepBot")
 
-create_replay_memory_dataset(bot1=bot1_sample, bot2=bot2)
 
+create_replay_memory_dataset(bot1=bot1_sample, bot2=bot2)
 train_model('LR')
 
 engine = SchnapsenGamePlayEngine()
