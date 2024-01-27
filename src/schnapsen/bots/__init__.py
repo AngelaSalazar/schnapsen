@@ -7,6 +7,6 @@ from .rdeep import RdeepBot
 from .ml_bot import MLDataBot, MLPlayingBot, train_ML_model
 from .gui.guibot import SchnapsenServer
 from .minimax import MiniMaxBot
-from .IS_project_bot import IS_project_bot
+from .IS_project_bot import Human_Strategy_Bot
 
-__all__ = ["RandBot", "AlphaBetaBot", "RdeepBot", "MLDataBot", "MLPlayingBot", "train_ML_model", "SchnapsenServer", "MiniMaxBot", "IS_project_bot"]
+__all__ = ["RandBot", "AlphaBetaBot", "RdeepBot", "MLDataBot", "MLPlayingBot", "train_ML_model", "SchnapsenServer", "MiniMaxBot", "Human_Strategy_Bot"]
