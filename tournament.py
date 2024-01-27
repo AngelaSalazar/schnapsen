@@ -2,7 +2,7 @@ import random
 import pathlib
 
 from schnapsen.game import SchnapsenGamePlayEngine
-from schnapsen.bots import RandBot, RdeepBot, IS_project_bot
+from schnapsen.bots import RandBot, RdeepBot, Human_Strategy_Bot
 
 from schnapsen.bots.ml_bot import create_replay_memory_dataset, train_model, MLPlayingBot
 
@@ -21,7 +21,7 @@ model_location = pathlib.Path(model_dir) / model_name
 
 myrepeats = 50
 
-bot1 = IS_project_bot(name="IS_project_bot")
+bot1 = Human_Strategy_Bot(name="Human_Strategy_Bot")
 bot3 = MLPlayingBot(model_location=model_location, name="MLBot")
 
 bots = [bot1, bot2, bot3]
